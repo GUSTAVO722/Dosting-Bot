@@ -5,101 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matix Bot - Terminal Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <style>
+        /* Diseño de barra de desplazamiento para tema oscuro */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+    </style>
 </head>
-<body class="bg-gray-900 text-gray-100 h-screen flex flex-col font-sans overflow-hidden">
+<body class="bg-gray-900 text-white font-sans antialiased p-4 h-screen flex flex-col">
 
-    <header class="bg-gray-800 border-b border-gray-700 p-4 flex justify-between items-center shadow-lg z-10">
-        <div class="flex items-center gap-3">
-            <h1 class="text-2xl font-bold text-white tracking-wider">⚡ MATIX <span class="text-blue-500">PRO</span></h1>
-            <span class="bg-gray-700 text-xs px-2 py-1 rounded text-gray-300 border border-gray-600">v2.0 Blindado</span>
+    <header class="flex justify-between items-center mb-4">
+        <div class="flex items-center space-x-4">
+            <h1 class="text-2xl font-bold text-blue-400">⚡ MATIX PRO</h1>
+            <span class="bg-gray-700 text-xs px-2 py-1 rounded text-gray-300">v2.0 Blindado</span>
         </div>
-        
-        <div class="flex items-center gap-2 bg-gray-900 px-4 py-2 rounded-full border border-gray-700">
-            <span class="relative flex h-3 w-3">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-            </span>
-            <span class="text-sm font-medium text-green-400 tracking-wide">Servidor Online</span>
+        <div class="flex items-center space-x-2 bg-green-900/30 border border-green-800 px-3 py-1 rounded-full">
+            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span class="text-green-400 text-sm font-semibold">Servidor Online</span>
         </div>
     </header>
 
-    <div class="flex flex-1 overflow-hidden">
+    <div class="flex items-center space-x-3 mb-4 bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-md">
+        <label class="text-gray-300 font-bold">🎯 Nuevo Radar:</label>
+        <input type="text" id="input-simbolo" placeholder="Ej: SOL-USD, NVDA, AAPL" 
+               class="bg-gray-900 text-white border border-gray-600 rounded-lg px-4 py-2 uppercase focus:outline-none focus:border-blue-500 w-64 transition-colors">
+        <button onclick="enviarOrdenAlBot(event)" 
+                class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-lg shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
+            + Iniciar Rastreo
+        </button>
+    </div>
 
-        <div class="w-2/3 flex flex-col border-r border-gray-700 bg-gray-900">
-            
-            <div id="contenedor-tarjetas" class="flex flex-wrap p-4 gap-4 bg-gray-800 shadow-inner overflow-x-auto">
-    <p class="text-gray-400 italic">Cargando radar multipantalla...</p>
-</div>
-            <div class="flex-1 bg-black p-1">
-                <div class="tradingview-widget-container" style="height:100%;width:100%">
-                  <div id="tradingview_123" style="height:100%;width:100%"></div>
-                  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-                  <script type="text/javascript">
-                  new TradingView.widget({
-                      "autosize": true,
-                      "symbol": "BINANCE:BTCUSD",
-                      "interval": "5",
-                      "timezone": "America/Argentina/Buenos_Aires",
-                      "theme": "dark",
-                      "style": "1",
-                      "locale": "es",
-                      "enable_publishing": false,
-                      "backgroundColor": "#111827",
-                      "gridColor": "#1f2937",
-                      "hide_top_toolbar": false,
-                      "hide_legend": false,
-                      "save_image": false,
-                      "container_id": "tradingview_123"
-                  });
-                  </script>
-                </div>
+    <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 min-h-0">
+        
+        <div class="col-span-2 flex flex-col space-y-4">
+            <div id="contenedor-tarjetas" class="flex space-x-4 overflow-x-auto pb-2">
+                <div class="text-gray-400 text-sm animate-pulse">Conectando a la nube...</div>
             </div>
+            <div class="flex-1 bg-gray-800 rounded-xl border border-gray-700 overflow-hidden" id="tradingview_123">
+                </div>
         </div>
 
-        <div class="w-1/3 bg-gray-800 flex flex-col">
-            <div class="p-4 border-b border-gray-700 bg-gray-900 shadow-md z-10">
-                <h3 class="text-lg font-bold text-gray-200 tracking-wide">🛰️ Radar de Decisiones IA</h3>
+        <div class="bg-gray-800 rounded-xl border border-gray-700 flex flex-col overflow-hidden">
+            <div class="p-3 border-b border-gray-700 bg-gray-800/50">
+                <h3 class="font-bold text-gray-300 flex items-center">
+                    <span>🤖 Radar de Decisiones IA</span>
+                </h3>
             </div>
-            
-            <div class="flex-1 overflow-y-auto p-4 bg-gray-800">
-                <div class="overflow-x-auto rounded-lg border border-gray-700 shadow-md">
-                    <table class="w-full text-sm text-left text-gray-300">
-                        <thead class="text-xs text-gray-400 uppercase bg-gray-900 border-b border-gray-700">
-                            <tr>
-                                <th scope="col" class="px-4 py-3">Hora</th>
-                                <th scope="col" class="px-4 py-3">Precio</th>
-                                <th scope="col" class="px-4 py-3">Veredicto Bot</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-historial">
-                            <tr class="bg-gray-800 border-b border-gray-700 text-center">
-                                <td colspan="3" class="px-4 py-4 text-gray-500 italic">Conectando con el cerebro de FinBERT...</td>
-                            </tr>
+            <div class="flex-1 overflow-y-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-900/50 sticky top-0">
+                        <tr>
+                            <th class="p-3 text-xs text-gray-400 font-semibold tracking-wider">HORA</th>
+                            <th class="p-3 text-xs text-gray-400 font-semibold tracking-wider">ACTIVO</th>
+                            <th class="p-3 text-xs text-gray-400 font-semibold tracking-wider">PRECIO</th>
+                            <th class="p-3 text-xs text-gray-400 font-semibold tracking-wider">DECISIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-historial">
                         </tbody>
-                    </table>
-                </div>
+                </table>
             </div>
         </div>
-
     </div>
 
     <script>
-        // 1. DICCIONARIO TRADUCTOR (De Yahoo Finance a TradingView)
+        // 1. DICCIONARIO TRADUCTOR BÁSICO
         const mapaSimbolosTV = {
-            "BTC": "BINANCE:BTCUSD",
-            "ETH": "BINANCE:ETHUSD",
-            "EURUSD": "FX:EURUSD",
+            "BTC-USD": "BINANCE:BTCUSD",
+            "ETH-USD": "BINANCE:ETHUSD",
+            "EURUSD=X": "FX:EURUSD",
             "GC=F": "OANDA:XAUUSD"
         };
 
-        // 2. FUNCIÓN PARA CAMBIAR EL GRÁFICO AL HACER CLIC
-        function cambiarGrafico(simboloCorto) {
-            const simboloTV = mapaSimbolosTV[simboloCorto] || "BINANCE:BTCUSD"; // Por defecto BTC
+        // 2. FUNCIÓN PARA CAMBIAR EL GRÁFICO
+        function cambiarGrafico(simboloOriginal) {
+            // Intenta buscar el símbolo en el diccionario, si no, adivina el formato
+            let simboloTV = mapaSimbolosTV[simboloOriginal];
+            if (!simboloTV) {
+                // Truco para acomodar monedas nuevas como SOL-USD a formato TradingView
+                let nombreLimpio = simboloOriginal.replace("-USD", "USD").replace("=X", "");
+                simboloTV = 'BINANCE:' + nombreLimpio; 
+            }
             
-            // Limpiamos el contenedor del gráfico viejo
             document.getElementById('tradingview_123').innerHTML = '';
-            
-            // Inyectamos el gráfico nuevo
             new TradingView.widget({
                 "autosize": true,
                 "symbol": simboloTV,
@@ -118,7 +108,41 @@
             });
         }
 
-        // 3. EL PULSO DEL RADAR (Conexión con Python)
+        // 3. NUEVA VÍA: ENVIAR ÓRDEN DE NUEVA MONEDA AL BOT EN LA NUBE
+        async function enviarOrdenAlBot(event) {
+            const input = document.getElementById('input-simbolo');
+            const simbolo = input.value.toUpperCase().trim();
+            
+            if (simbolo === "") return;
+
+            const btn = event.currentTarget;
+            const textoOriginal = btn.innerText;
+            btn.innerText = "⏳ Conectando..."; // Efecto visual
+
+            try {
+                // Aquí disparamos la orden a tu servidor
+                const respuesta = await fetch('https://dosting-bot.onrender.com/agregar-simbolo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ simbolo: simbolo })
+                });
+                
+                const resultado = await respuesta.json();
+                
+                if (resultado.exito) {
+                    input.value = ''; // Limpiar cajita
+                    obtenerDatosDelBot(); // Actualizar las tarjetas para ver la nueva
+                } else {
+                    alert("Aviso del Bot: " + resultado.mensaje);
+                }
+            } catch (error) {
+                alert("❌ Error de comunicación con la nube.");
+            } finally {
+                btn.innerText = textoOriginal;
+            }
+        }
+
+        // 4. VÍA ORIGINAL: RECIBIR DATOS DEL BOT
         async function obtenerDatosDelBot() {
             try {
                 const respuesta = await fetch('https://dosting-bot.onrender.com/datos-bot');
@@ -129,19 +153,15 @@
 
                 const horaActual = new Date().toLocaleTimeString('es-AR', { hour12: false });
                 const tabla = document.getElementById('tabla-historial');
-                if (tabla.innerHTML.includes("Conectando")) tabla.innerHTML = "";
 
                 radarDatos.forEach(activo => {
-                    
-                    // A) Creamos las tarjetas como BOTONES CLICKEABLES
-                    // Le agregamos cursor-pointer, hover y transform para que reaccionen al mouse
                     const tarjetaHTML = `
                     <div onclick="cambiarGrafico('${activo.simbolo}')" class="bg-gray-700 p-3 rounded-xl flex-1 border border-gray-600 shadow-md min-w-[150px] cursor-pointer hover:bg-gray-600 hover:border-blue-500 transition-all duration-200 transform hover:-translate-y-1">
                         <div class="flex justify-between items-center mb-1">
-                            <p class="text-gray-300 font-bold tracking-wider">${activo.simbolo}</p>
+                            <p class="text-gray-300 font-bold tracking-wider">${activo.simbolo.replace("-USD", "").replace("=X", "")}</p>
                             <span class="text-[10px] ${activo.tendencia.includes('ALCISTA') ? 'text-green-400' : 'text-red-400'}">${activo.tendencia}</span>
                         </div>
-                        <h2 class="text-xl font-bold text-white mb-1">$${activo.precio.toLocaleString()}</h2>
+                        <h2 class="text-xl font-bold text-white mb-1">$${activo.precio.toLocaleString('en-US')}</h2>
                         <div class="flex justify-between text-xs">
                             <span class="text-gray-400">RSI: <span class="text-blue-400 font-bold">${activo.rsi}</span></span>
                             <span class="${activo.color} font-bold">${activo.decision.split(' ')[0]}</span>
@@ -150,13 +170,13 @@
                     `;
                     contenedorTarjetas.insertAdjacentHTML('beforeend', tarjetaHTML);
 
-                    // B) Historial de operaciones
+                    // Si hay Señal de Compra o Venta, la agregamos a la tabla lateral
                     if (!activo.decision.includes("ESPERAR")) {
                         const nuevaFila = `
                             <tr class="bg-gray-800 border-b border-gray-700 hover:bg-gray-700 transition-colors">
                                 <td class="px-3 py-2 font-mono text-gray-400 text-xs">${horaActual}</td>
-                                <td class="px-3 py-2 font-bold text-blue-400">${activo.simbolo}</td>
-                                <td class="px-3 py-2 font-bold text-white">$${activo.precio}</td>
+                                <td class="px-3 py-2 font-bold text-blue-400">${activo.simbolo.replace("-USD", "").replace("=X", "")}</td>
+                                <td class="px-3 py-2 font-bold text-white">$${activo.precio.toLocaleString('en-US')}</td>
                                 <td class="px-3 py-2 font-bold ${activo.color} text-xs">${activo.decision}</td>
                             </tr>
                         `;
@@ -169,8 +189,12 @@
             }
         }
 
+        // Iniciar el latido del bot cada 10 segundos
         setInterval(obtenerDatosDelBot, 10000);
         obtenerDatosDelBot();
+        
+        // Cargar el gráfico de Bitcoin al abrir la página
+        setTimeout(() => cambiarGrafico('BTC-USD'), 1000);
     </script>
 </body>
 </html>
