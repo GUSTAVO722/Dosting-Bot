@@ -2,7 +2,8 @@ from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 import yfinance as yf
 import pandas as pd
-import requests as peticiones_web # Renombrado para no confundir con request de Flask
+import requests as peticiones_web
+from binance.client import Client
 
 app = Flask(__name__)
 CORS(app)
@@ -21,15 +22,35 @@ def enviar_alerta_telegram(mensaje):
         print(f"❌ Error al enviar Telegram: {e}")
 # ---------------------------------
 
-# --- RADAR MAESTRO (Memoria Global del Bot) ---
+# --- CONFIGURACIÓN DE BINANCE (TESTNET) ---
+API_KEY = "M8j8EAWLjLBSu8YjtlWdFXQw0voRDXp2zla9YK0TncdfFMFzOS8aFrcjYDH1Bvzr"
+API_SECRET = "SZimBjG9a33KWtWo3jBSbabY0zdjvKvYR1KKHMsmJg46waEp1jlLOqSqqrQJA9xp"
+
+# Encendemos el motor de Binance obligándolo a usar la red de pruebas (testnet=True)
+try:
+    cliente_broker = Client(API_KEY, API_SECRET, testnet=True)
+except Exception as e:
+    print(f"Error iniciando Binance: {e}")
+
+def probar_conexion_broker():
+    """Esta función revisa la billetera y avisa por Telegram al iniciar"""
+    try:
+        # Buscamos cuántos dólares falsos (USDT) nos dio Binance para probar
+        balance = cliente_broker.get_asset_balance(asset='USDT')
+        if balance:
+            dolares_disponibles = round(float(balance['free']), 2)
+            enviar_alerta_telegram(f"✅ ¡CONEXIÓN EXITOSA AL BROKER! El bot ha iniciado sesión en Binance Testnet. Fondos disponibles: ${dolares_disponibles} USDT.")
+    except Exception as e:
+        enviar_alerta_telegram(f"❌ Error conectando a la cuenta del Broker: {e}")
+# ---------------------------------
+
+# --- RADAR MAESTRO ---
 activos_a_vigilar = ["BTC-USD", "ETH-USD", "EURUSD=X", "GC=F"]
 
-# --- RUTA 1: MUESTRA LA PÁGINA WEB VISUAL ---
 @app.route('/')
 def inicio():
     return render_template('index.html')
 
-# --- RUTA 2: ESCUCHA ÓRDENES PARA AGREGAR MONEDAS ---
 @app.route('/agregar-simbolo', methods=['POST'])
 def agregar_simbolo():
     global activos_a_vigilar
@@ -37,17 +58,16 @@ def agregar_simbolo():
     nuevo_simbolo = datos_recibidos.get('simbolo')
     
     if nuevo_simbolo:
-        nuevo_simbolo = nuevo_simbolo.upper().strip() # Lo pasa a mayúsculas y quita espacios
+        nuevo_simbolo = nuevo_simbolo.upper().strip()
         if nuevo_simbolo not in activos_a_vigilar:
             activos_a_vigilar.append(nuevo_simbolo)
-            enviar_alerta_telegram(f"✅ COMANDO RECIBIDO: Nuevo activo agregado al radar -> {nuevo_simbolo}")
+            enviar_alerta_telegram(f"🎯 COMANDO RECIBIDO: Nuevo activo agregado al radar -> {nuevo_simbolo}")
             return jsonify({"mensaje": "Activo agregado al radar", "exito": True})
         else:
             return jsonify({"mensaje": "El activo ya está en el radar", "exito": False})
     
     return jsonify({"mensaje": "Error: No se envió ningún símbolo", "exito": False})
 
-# --- RUTA 3: CALCULA Y ENVÍA LOS DATOS MATEMÁTICOS ---
 @app.route('/datos-bot')
 def obtener_datos():
     global activos_a_vigilar
@@ -58,7 +78,6 @@ def obtener_datos():
             activo = yf.Ticker(simbolo)
             datos = activo.history(period="2d", interval="5m")
             
-            # Si el símbolo no existe en Yahoo Finance, saltamos al siguiente
             if datos.empty:
                 continue
                 
@@ -113,5 +132,7 @@ def obtener_datos():
     return jsonify(resultados_radar)
 
 if __name__ == '__main__':
-    enviar_alerta_telegram("🤖 Modo Interactivo Activado: Esperando órdenes de la web.")
+    enviar_alerta_telegram("🤖 Sistema reiniciado.")
+    # ¡Le decimos al bot que revise la billetera al encenderse!
+    probar_conexion_broker() 
     app.run(host='0.0.0.0', port=5000)
