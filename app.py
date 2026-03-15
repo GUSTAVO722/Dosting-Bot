@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 from flask_cors import CORS
 import yfinance as yf
 import pandas as pd
@@ -20,6 +20,12 @@ def enviar_alerta_telegram(mensaje):
     except Exception as e:
         print(f"❌ Error al enviar Telegram: {e}")
 # ---------------------------------
+
+# --- NUEVA RUTA: ESTA MUESTRA LA PÁGINA WEB VISUAL ---
+@app.route('/')
+def inicio():
+    return render_template('index.html')
+# -----------------------------------------------------
 
 @app.route('/datos-bot')
 def obtener_datos():
@@ -89,5 +95,5 @@ def obtener_datos():
 # 3. Encendemos el motor preparado para servidores
 if __name__ == '__main__':
     print("Enviando mensaje de prueba a Telegram...")
-    enviar_alerta_telegram("🤖 ¡Hola jefe! Tu bot está ultra-ligero y listo para la nube. 🚀")
+    enviar_alerta_telegram("🤖 ¡Hola jefe! Tu panel web está integrado y en vivo en la nube. 🚀")
     app.run(host='0.0.0.0', port=5000)
