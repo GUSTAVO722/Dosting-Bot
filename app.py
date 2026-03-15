@@ -26,22 +26,24 @@ def enviar_alerta_telegram(mensaje):
 API_KEY = "M8j8EAWLjLBSu8YjtlWdFXQw0voRDXp2zla9YK0TncdfFMFzOS8aFrcjYDH1Bvzr"
 API_SECRET = "SZimBjG9a33KWtWo3jBSbabY0zdjvKvYR1KKHMsmJg46waEp1jlLOqSqqrQJA9xp"
 
-# Encendemos el motor de Binance obligándolo a usar la red de pruebas (testnet=True)
 try:
     cliente_broker = Client(API_KEY, API_SECRET, testnet=True)
 except Exception as e:
     print(f"Error iniciando Binance: {e}")
 
 def probar_conexion_broker():
-    """Esta función revisa la billetera y avisa por Telegram al iniciar"""
+    """Revisa la billetera y avisa por Telegram"""
     try:
-        # Buscamos cuántos dólares falsos (USDT) nos dio Binance para probar
         balance = cliente_broker.get_asset_balance(asset='USDT')
         if balance:
             dolares_disponibles = round(float(balance['free']), 2)
             enviar_alerta_telegram(f"✅ ¡CONEXIÓN EXITOSA AL BROKER! El bot ha iniciado sesión en Binance Testnet. Fondos disponibles: ${dolares_disponibles} USDT.")
     except Exception as e:
         enviar_alerta_telegram(f"❌ Error conectando a la cuenta del Broker: {e}")
+
+# 🔥 LA CORRECCIÓN ESTÁ AQUÍ 🔥
+# Lo ponemos fuera de cualquier bloque para que Gunicorn lo ejecute sí o sí al iniciar
+probar_conexion_broker()
 # ---------------------------------
 
 # --- RADAR MAESTRO ---
@@ -132,7 +134,4 @@ def obtener_datos():
     return jsonify(resultados_radar)
 
 if __name__ == '__main__':
-    enviar_alerta_telegram("🤖 Sistema reiniciado.")
-    # ¡Le decimos al bot que revise la billetera al encenderse!
-    probar_conexion_broker() 
     app.run(host='0.0.0.0', port=5000)
