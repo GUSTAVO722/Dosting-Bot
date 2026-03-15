@@ -26,24 +26,29 @@ def enviar_alerta_telegram(mensaje):
 API_KEY = "M8j8EAWLjLBSu8YjtlWdFXQw0voRDXp2zla9YK0TncdfFMFzOS8aFrcjYDH1Bvzr"
 API_SECRET = "SZimBjG9a33KWtWo3jBSbabY0zdjvKvYR1KKHMsmJg46waEp1jlLOqSqqrQJA9xp"
 
-try:
-    cliente_broker = Client(API_KEY, API_SECRET, testnet=True)
-except Exception as e:
-    print(f"Error iniciando Binance: {e}")
+# Creamos la variable vacía primero para que nunca dé error de "not defined"
+cliente_broker = None 
 
-def probar_conexion_broker():
-    """Revisa la billetera y avisa por Telegram"""
+def conectar_y_probar_broker():
+    global cliente_broker
     try:
+        # 1. Intentamos iniciar sesión con las llaves
+        cliente_broker = Client(API_KEY, API_SECRET, testnet=True)
+        
+        # 2. Si entró bien, miramos la billetera
         balance = cliente_broker.get_asset_balance(asset='USDT')
         if balance:
             dolares_disponibles = round(float(balance['free']), 2)
-            enviar_alerta_telegram(f"✅ ¡CONEXIÓN EXITOSA AL BROKER! El bot ha iniciado sesión en Binance Testnet. Fondos disponibles: ${dolares_disponibles} USDT.")
+            enviar_alerta_telegram(f"✅ ¡CONEXIÓN EXITOSA! Binance Testnet Online. Fondos: ${dolares_disponibles} USDT.")
+        else:
+            enviar_alerta_telegram("✅ ¡Conectado a Binance! Pero tu cuenta Testnet no tiene USDT.")
+            
     except Exception as e:
-        enviar_alerta_telegram(f"❌ Error conectando a la cuenta del Broker: {e}")
+        # Si algo falla, ahora sí nos dirá EXACTAMENTE el motivo real de Binance
+        enviar_alerta_telegram(f"❌ Fallo real al conectar con Binance: {e}")
 
-# 🔥 LA CORRECCIÓN ESTÁ AQUÍ 🔥
-# Lo ponemos fuera de cualquier bloque para que Gunicorn lo ejecute sí o sí al iniciar
-probar_conexion_broker()
+# Ejecutamos la función de conexión blindada
+conectar_y_probar_broker()
 # ---------------------------------
 
 # --- RADAR MAESTRO ---
@@ -129,7 +134,7 @@ def obtener_datos():
             })
             
         except Exception as e:
-            print(f"Error procesando {simbolo}: {e}")
+            pass # Ignoramos errores menores de lectura para no saturar
 
     return jsonify(resultados_radar)
 
